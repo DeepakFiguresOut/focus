@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="description" content="You're not distracted. You're overloaded. Important information is getting lost in the noise.">
+<title>focus. — Rethink Notifications</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+
+<style>
+/* ─── RESET & BASE ─── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --neon-blue:   #00d4ff;
+  --neon-red:    #ff3b5c;
+  --neon-yellow: #ffcc00;
+  --neon-green:  #00ff9d;
+  --neon-purple: #bb7fff;
+  --neon-orange: #ff8a4c;
+
+  --dark-bg:      #080b12;
+  --dark-surface: #0d1220;
+  --dark-card:    #111827;
+  --glass:        rgba(255,255,255,0.035);
+  --glass-hover:  rgba(255,255,255,0.06);
+  --glass-border: rgba(255,255,255,0.07);
+  --glass-border-hover: rgba(255,255,255,0.14);
+
+  --text-primary:   #eef2ff;
+  --text-secondary: rgba(238,242,255,0.58);
+  --text-muted:     rgba(238,242,255,0.28);
+
+  --font-display: 'Syne', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+
+  --radius-sm:  10px;
+  --radius-md:  16px;
+  --radius-lg:  24px;
+  --radius-xl:  32px;
+
+  --section-pad: clamp(4rem, 8vw, 7rem) clamp(1.2rem, 5vw, 3.5rem);
+  --max-w:       1080px;
+
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--dark-bg);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img, svg { display: block; max-width: 100%; }
+button { font-family: var(--font-body); cursor: pointer; border: none; outline: none; }
+a { text-decoration: none; color: inherit; }
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--dark-bg); }
+::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.3); border-radius: 4px; }
+
+/* ─── NOISE TEXTURE OVERLAY ─── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-size: 180px;
+}
+
+/* ─── NAV ─── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 clamp(1.2rem, 4vw, 3rem);
+  height: 60px;
+  background: rgba(8,11,18,0.75);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-bottom: 1px solid var(--glass-border);
+  transition: var(--transition);
+}
+
+.nav-logo {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+}
+
+.nav-logo span { color: var(--neon-blue); }
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.2rem, 3vw, 2.5rem);
+}
+
+.nav-links a {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  letter-spacing: 0.2px;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover { color: var(--text-primary); }
+
+.nav-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0,212,255,0.1);
+  border: 1px solid rgba(0,212,255,0.25);
+  color: var(--neon-blue) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding: 7px 16px;
+  border-radius: 50px;
+  transition: var(--transition) !important;
+}
+
+.nav-cta:hover {
+  background: rgba(0,212,255,0.18) !important;
+  box-shadow: 0 0 20px rgba(0,212,255,0.15);
+}
+
+.nav-menu-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 32px;
+  height: 32px;
+  background: none;
+  padding: 4px;
+}
+
+.nav-menu-btn span {
+  display: block;
+  height: 1.5px;
+  background: var(--text-secondary);
+  border-radius: 2px;
+  transition: var(--transition);
+}
+
+.nav-mobile {
+  display: none;
+  position: fixed;
+  top: 60px; left: 0; right: 0;
+  background: rgba(8,11,18,0.97);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--glass-border);
+  padding: 1.5rem clamp(1.2rem, 4vw, 3rem);
+  flex-direction: column;
+  gap: 1.2rem;
+  z-index: 999;
+}
+
+.nav-mobile.open { display: flex; }
+.nav-mobile a { font-size: 15px; color: var(--text-secondary); font-weight: 400; padding: 0.4rem 0; border-bottom: 1px solid var(--glass-border); }
+.nav-mobile a:last-child { border-bottom: none; }
+
+/* ─── SECTION DIVIDER ─── */
+.divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--glass-border) 30%, var(--glass-border) 70%, transparent 100%);
+}
+
+/* ─── REVEAL ANIMATION ─── */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.75s cubic-bezier(0.4,0,0.2,1), transform 0.75s cubic-bezier(0.4,0,0.2,1);
+}
+
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+.reveal-delay-5 { transition-delay: 0.5s; }
+
+/* ─── SECTION LABEL ─── */
+.section-label {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--neon-blue);
+  margin-bottom: 1rem;
+  font-family: var(--font-body);
+}
+
+/* ─── ─── ─── HERO ─── ─── ─── */
+#hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(5.5rem, 10vw, 8rem) clamp(1.2rem, 5vw, 3rem) clamp(3rem, 6vw, 5rem);
+  overflow: hidden;
+  gap: clamp(2rem, 4vw, 3.5rem);
+}
+
+/* Ambient backgrounds */
+.hero-radial {
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 30%, rgba(0,90,200,0.14) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 50% at 85% 85%, rgba(255,59,92,0.08) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 35% at 10% 70%, rgba(0,255,157,0.05) 0%, transparent 50%);
+}
+
+.hero-grid {
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+  background-size: clamp(40px,6vw,70px) clamp(40px,6vw,70px);
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 40%, black 30%, transparent 100%);
+}
+
+/* ── Phone ── */
+.phone-outer {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.phone-frame {
+  position: relative;
+  width: clamp(180px, 38vw, 240px);
+  height: clamp(340px, 72vw, 460px);
+  background: linear-gradient(160deg, #192038 0%, #0c1420 100%);
+  border-radius: clamp(24px, 5vw, 36px);
+  border: 1.5px solid rgba(0,212,255,0.22);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.5),
+    0 0 50px rgba(0,212,255,0.10),
+    0 0 120px rgba(0,212,255,0.05),
+    inset 0 1px 0 rgba(255,255,255,0.07);
+  overflow: hidden;
+}
+
+.phone-screen {
+  position: absolute;
+  inset: clamp(6px,2%,10px);
+  border-radius: clamp(18px,4vw,28px);
+  background: #08101a;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.phone-notch {
+  position: absolute;
+  top: 8px; left: 50%;
+  transform: translateX(-50%);
+  width: 55px; height: 6px;
+  background: #172030;
+  border-radius: 3px;
+  z-index: 10;
+}
+
+.phone-status {
+  padding: clamp(14px,4%,20px) clamp(10px,3%,14px) 6px;
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-body);
+  font-size: clamp(7px, 1.5vw, 9px);
+  color: rgba(238,242,255,0.45);
+  letter-spacing: 0.4px;
+  flex-shrink: 0;
+}
+
+.notif-stream {
+  flex: 1;
+  padding: 2px clamp(6px,2%,10px) 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow: hidden;
+}
+
+.notif-item {
+  border-radius: 9px;
+  padding: clamp(5px,1.5%,8px) clamp(7px,2%,10px);
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: clamp(7px,1.5vw,9px);
+  line-height: 1.35;
+  opacity: 0;
+  transform: translateY(-6px);
+  animation: notifIn 0.35s ease forwards;
+  border: 1px solid transparent;
+  flex-shrink: 0;
+}
+
+@keyframes notifIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.notif-icon {
+  width: clamp(18px,4%,24px);
+  height: clamp(18px,4%,24px);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(9px,2vw,12px);
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.06);
+}
+
+.notif-content strong {
+  font-weight: 600;
+  display: block;
+  font-size: clamp(7px,1.5vw,9px);
+  margin-bottom: 1px;
+}
+
+.notif-content span {
+  color: rgba(238,242,255,0.5);
+  font-size: clamp(6px,1.3vw,8px);
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.notif-spam   { background: rgba(30,20,55,0.85); border-color: rgba(130,70,220,0.25); }
+.notif-social { background: rgba(0,28,58,0.85);  border-color: rgba(0,110,255,0.25); }
+.notif-promo  { background: rgba(42,20,8,0.85);  border-color: rgba(255,120,30,0.25); }
+.notif-otp    { background: rgba(42,0,12,0.92);  border-color: rgba(255,59,92,0.5); box-shadow: 0 0 12px rgba(255,59,92,0.18); }
+.notif-bank   { background: rgba(0,40,28,0.92);  border-color: rgba(0,255,157,0.5); box-shadow: 0 0 12px rgba(0,255,157,0.14); }
+.notif-exam   { background: rgba(40,30,0,0.92);  border-color: rgba(255,204,0,0.5); box-shadow: 0 0 12px rgba(255,204,0,0.14); }
+
+/* ── Hero Text ── */
+.hero-text {
+  text-align: center;
+  z-index: 2;
+  max-width: clamp(300px, 85vw, 640px);
+}
+
+.hero-eyebrow {
+  font-size: clamp(9px, 2vw, 11px);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--neon-blue);
+  margin-bottom: clamp(0.8rem, 2vw, 1.2rem);
+  font-weight: 500;
+  opacity: 0;
+  animation: fadeUp 0.9s 0.4s ease forwards;
+}
+
+.hero-headline {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 6vw, 3.8rem);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -1.5px;
+  margin-bottom: clamp(1rem, 2.5vw, 1.4rem);
+  opacity: 0;
+  animation: fadeUp 0.9s 0.6s ease forwards;
+}
+
+.hero-headline .accent-red  { color: var(--neon-red); }
+.hero-headline .accent-blue { color: var(--neon-blue); }
+
+.hero-sub {
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+  color: var(--text-secondary);
+  font-weight: 300;
+  line-height: 1.65;
+  margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+  opacity: 0;
+  animation: fadeUp 0.9s 0.8s ease forwards;
+}
+
+.scroll-cta {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  opacity: 0;
+  animation: fadeUp 0.9s 1.1s ease forwards;
+  transition: opacity 0.2s;
+}
+
+.scroll-cta:hover { opacity: 0.7; }
+
+.scroll-cta-label {
+  font-size: clamp(9px, 2vw, 11px);
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.scroll-arrow-line {
+  width: 1px;
+  height: 36px;
+  background: linear-gradient(to bottom, rgba(0,212,255,0.2), var(--neon-blue));
+  animation: pulseArrow 2.2s ease-in-out infinite;
+}
+
+@keyframes pulseArrow  { 0%,100%{opacity:0.25} 55%{opacity:1} }
+@keyframes fadeUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+
+/* ─── ─── ─── STATS ─── ─── ─── */
+#stats {
+  padding: var(--section-pad);
+  background: linear-gradient(180deg, transparent 0%, rgba(0,212,255,0.025) 50%, transparent 100%);
+}
+
+.stats-inner { max-width: var(--max-w); margin: 0 auto; }
+
+.section-head { margin-bottom: clamp(2rem, 4vw, 3rem); }
+
+.section-head h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 4.5vw, 2.8rem);
+  font-weight: 700;
+  letter-spacing: -0.8px;
+  line-height: 1.15;
+  margin-bottom: 0.75rem;
+}
+
+.section-head p {
+  font-size: clamp(0.9rem, 2.5vw, 1.05rem);
+  color: var(--text-secondary);
+  font-weight: 300;
+  line-height: 1.7;
+  max-width: 540px;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(clamp(140px, 40vw, 220px), 1fr));
+  gap: clamp(10px, 2vw, 16px);
+}
+
+.stat-card {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: clamp(1.2rem, 3vw, 2rem) clamp(1rem, 2.5vw, 1.6rem);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition);
+  cursor: default;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--card-glow, var(--neon-blue)), transparent);
+  opacity: 0.7;
+}
+
+.stat-card::after {
+  content: '';
+  position: absolute;
+  top: -40px; left: 50%; transform: translateX(-50%);
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: var(--card-glow, var(--neon-blue));
+  opacity: 0;
+  filter: blur(35px);
+  transition: opacity 0.4s;
+}
+
+.stat-card:hover { border-color: var(--glass-border-hover); transform: translateY(-4px); }
+.stat-card:hover::after { opacity: 0.08; }
+
+.stat-number {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 7vw, 3.4rem);
+  font-weight: 800;
+  letter-spacing: -2.5px;
+  line-height: 1;
+  margin-bottom: 0.6rem;
+}
+
+.stat-label {
+  font-size: clamp(11px, 2vw, 13px);
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+/* ─── ─── ─── PSYCHOLOGICAL ─── ─── ─── */
+#psych {
+  padding: var(--section-pad);
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+.psych-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(clamp(240px, 40vw, 320px), 1fr));
+  gap: clamp(10px, 2vw, 14px);
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+
+.psych-card {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: clamp(1.2rem, 3vw, 1.6rem);
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.psych-card::after {
+  content: '';
+  position: absolute;
+  top: -50px; right: -50px;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: var(--card-accent, rgba(0,212,255,0.5));
+  filter: blur(40px);
+  opacity: 0.18;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+
+.psych-card:hover { border-color: var(--glass-border-hover); transform: translateY(-3px); }
+.psych-card:hover::after { opacity: 0.28; }
+
+.psych-word {
+  font-family: var(--font-display);
+  font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.psych-desc {
+  font-size: clamp(12px, 2vw, 13px);
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-weight: 300;
+}
+
+/* ─── ─── ─── MISSED ─── ─── ─── */
+#missed {
+  padding: var(--section-pad);
+  background: linear-gradient(180deg, transparent 0%, rgba(255,59,92,0.03) 40%, transparent 100%);
+}
+
+.missed-inner { max-width: var(--max-w); margin: 0 auto; }
+
+.missed-cards {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1.5vw, 12px);
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+
+.missed-card {
+  background: rgba(255,59,92,0.03);
+  border: 1px solid rgba(255,59,92,0.1);
+  border-radius: var(--radius-sm);
+  padding: clamp(1rem, 2.5vw, 1.3rem) clamp(1rem, 3vw, 1.6rem);
+  display: flex;
+  align-items: center;
+  gap: clamp(0.8rem, 2vw, 1.2rem);
+  opacity: 0.48;
+  filter: grayscale(0.4);
+  transition: var(--transition);
+  cursor: default;
+}
+
+.missed-card:hover { opacity: 0.78; filter: grayscale(0); }
+
+.missed-icon {
+  width: clamp(32px, 7vw, 42px);
+  height: clamp(32px, 7vw, 42px);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(14px, 3.5vw, 18px);
+  background: rgba(255,59,92,0.08);
+  flex-shrink: 0;
+}
+
+.missed-text { flex: 1; min-width: 0; }
+
+.missed-title {
+  font-size: clamp(12px, 2.5vw, 14px);
+  font-weight: 500;
+  color: rgba(238,242,255,0.72);
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.missed-time {
+  font-size: clamp(10px, 2vw, 12px);
+  color: rgba(255,59,92,0.65);
+  font-weight: 400;
+}
+
+.missed-badge {
+  flex-shrink: 0;
+  font-size: clamp(9px, 1.8vw, 10px);
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: rgba(255,59,92,0.6);
+  background: rgba(255,59,92,0.07);
+  padding: clamp(3px,1%,5px) clamp(8px,2%,12px);
+  border-radius: 20px;
+  border: 1px solid rgba(255,59,92,0.18);
+  white-space: nowrap;
+}
+
+/* ─── ─── ─── TRANSITION ─── ─── ─── */
+#transition {
+  padding: clamp(5rem, 12vw, 9rem) clamp(1.2rem, 5vw, 3rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.transition-glow {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(300px, 60vw, 700px);
+  height: clamp(300px, 60vw, 700px);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,212,255,0.05) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.transition-content { max-width: 680px; z-index: 2; }
+
+.big-quote {
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 4vw, 2.2rem);
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.big-quote strong { color: var(--text-primary); font-weight: 700; }
+.big-quote .q-blue { color: var(--neon-blue); font-weight: 600; font-size: 0.82em; display: block; margin-top: 1.2rem; }
+
+/* ─── ─── ─── CONCEPT ─── ─── ─── */
+#concept {
+  padding: var(--section-pad);
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+.pillar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(clamp(240px, 40vw, 320px), 1fr));
+  gap: clamp(10px, 2vw, 16px);
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+
+.pillar-card {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: clamp(1.4rem, 3.5vw, 2rem) clamp(1.2rem, 3vw, 1.8rem);
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.pillar-card::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--pillar-accent, var(--neon-blue)), transparent);
+  opacity: 0.5;
+}
+
+.pillar-card:hover { border-color: var(--glass-border-hover); transform: translateY(-5px); box-shadow: 0 24px 48px rgba(0,0,0,0.35); }
+.pillar-card:hover::before { opacity: 1; }
+
+.pillar-icon {
+  width: clamp(36px, 8vw, 48px);
+  height: clamp(36px, 8vw, 48px);
+  border-radius: clamp(8px, 2vw, 14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(16px, 4vw, 22px);
+  margin-bottom: clamp(1rem, 2.5vw, 1.4rem);
+}
+
+.pillar-title {
+  font-family: var(--font-display);
+  font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+  font-weight: 600;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.pillar-desc {
+  font-size: clamp(12px, 2vw, 13px);
+  color: var(--text-secondary);
+  line-height: 1.65;
+  font-weight: 300;
+}
+
+/* ─── ─── ─── FINAL ─── ─── ─── */
+#final {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: clamp(4rem, 8vw, 7rem) clamp(1.2rem, 5vw, 3rem);
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, transparent 0%, rgba(0,5,15,0.6) 60%, rgba(0,0,0,0.85) 100%);
+}
+
+.final-radial {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 70% 60% at 50% 60%, rgba(0,212,255,0.055) 0%, transparent 65%);
+}
+
+.final-rings {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(0,212,255,0.06);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  animation: ringPulse 6s ease-in-out infinite;
+}
+
+.ring:nth-child(1) { width: 300px; height: 300px; animation-delay: 0s; }
+.ring:nth-child(2) { width: 500px; height: 500px; animation-delay: 0.8s; }
+.ring:nth-child(3) { width: 700px; height: 700px; animation-delay: 1.6s; }
+.ring:nth-child(4) { width: 900px; height: 900px; animation-delay: 2.4s; }
+
+@keyframes ringPulse { 0%,100%{opacity:0.3} 50%{opacity:0.7} }
+
+.final-quote {
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 4vw, 2rem);
+  font-weight: 300;
+  line-height: 1.65;
+  max-width: clamp(300px, 80vw, 680px);
+  margin-bottom: clamp(2rem, 5vw, 3.5rem);
+  color: var(--text-secondary);
+  z-index: 2;
+}
+
+.final-quote em    { color: var(--text-primary); font-style: normal; font-weight: 700; }
+.final-quote .highlight { color: var(--neon-blue); font-weight: 700; }
+
+.cta-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(8px, 2vw, 12px);
+  justify-content: center;
+  z-index: 2;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, rgba(0,212,255,0.13), rgba(0,212,255,0.04));
+  border: 1px solid rgba(0,212,255,0.38);
+  color: var(--neon-blue);
+  padding: clamp(0.7rem,2vw,0.9rem) clamp(1.4rem,3.5vw,2.2rem);
+  border-radius: 50px;
+  font-size: clamp(12px, 2.5vw, 14px);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  transition: var(--transition);
+}
+
+.btn-primary:hover {
+  background: rgba(0,212,255,0.18);
+  box-shadow: 0 0 35px rgba(0,212,255,0.22);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.14);
+  color: var(--text-secondary);
+  padding: clamp(0.7rem,2vw,0.9rem) clamp(1.4rem,3.5vw,2.2rem);
+  border-radius: 50px;
+  font-size: clamp(12px, 2.5vw, 14px);
+  font-weight: 400;
+  transition: var(--transition);
+}
+
+.btn-secondary:hover {
+  border-color: rgba(255,255,255,0.28);
+  color: var(--text-primary);
+  transform: translateY(-2px);
+}
+
+/* ─── FOOTER ─── */
+footer {
+  padding: 1.8rem clamp(1.2rem, 5vw, 3rem);
+  border-top: 1px solid var(--glass-border);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 100%;
+}
+
+.footer-logo {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  letter-spacing: -0.3px;
+}
+
+.footer-logo span { color: var(--neon-blue); }
+
+.footer-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 300;
+}
+
+/* ─── RESPONSIVE ─── */
+
+/* Tablets (481px – 768px) */
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .nav-menu-btn { display: flex; }
+
+  #hero { gap: 2rem; }
+
+  .psych-grid,
+  .pillar-grid,
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+
+  .ring:nth-child(3),
+  .ring:nth-child(4) { display: none; }
+}
+
+/* Small phones (≤480px) */
+@media (max-width: 480px) {
+  .psych-grid,
+  .pillar-grid { grid-template-columns: 1fr; }
+
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+
+  .missed-title { font-size: 11px; }
+
+  .cta-group { flex-direction: column; align-items: stretch; }
+  .btn-primary, .btn-secondary { text-align: center; }
+
+  footer { flex-direction: column; text-align: center; }
+
+  .ring:nth-child(2),
+  .ring:nth-child(3),
+  .ring:nth-child(4) { display: none; }
+}
+
+/* Large desktop (≥1280px) */
+@media (min-width: 1280px) {
+  #hero {
+    flex-direction: row;
+    justify-content: center;
+    gap: clamp(3rem, 6vw, 7rem);
+    padding-top: 5rem;
+  }
+
+  .hero-text { text-align: left; }
+  .scroll-cta { align-items: flex-start; }
+
+  .phone-outer { order: 2; }
+  .hero-text { order: 1; }
+}
+
+/* Ultra-wide */
+@media (min-width: 1600px) {
+  :root { --max-w: 1200px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ─── NAV ─── -->
+<nav id="navbar">
+  <div class="nav-logo">focus<span>.</span></div>
+  <div class="nav-links">
+    <a href="#stats">The Problem</a>
+    <a href="#psych">Impact</a>
+    <a href="#missed">What's Lost</a>
+    <a href="#concept">The Shift</a>
+    <a href="#final" class="nav-cta">Take Control</a>
+  </div>
+  <button class="nav-menu-btn" id="menuBtn" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="nav-mobile" id="navMobile">
+  <a href="#stats"    onclick="closeMobile()">The Problem</a>
+  <a href="#psych"    onclick="closeMobile()">Psychological Impact</a>
+  <a href="#missed"   onclick="closeMobile()">What's Lost</a>
+  <a href="#concept"  onclick="closeMobile()">The Shift</a>
+  <a href="#final"    onclick="closeMobile()">Take Control</a>
+</div>
+
+<!-- ═══════════════════════════ HERO ═══════════════════════════ -->
+<section id="hero">
+  <div class="hero-radial"></div>
+  <div class="hero-grid"></div>
+
+  <!-- Phone -->
+  <div class="phone-outer">
+    <div class="phone-frame">
+      <div class="phone-screen">
+        <div class="phone-notch"></div>
+        <div class="phone-status">
+          <span>9:41</span>
+          <span>●●● 5G ▮▮▮</span>
+        </div>
+        <div class="notif-stream" id="notifStream"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Text -->
+  <div class="hero-text">
+    <div class="hero-eyebrow">The Attention Crisis</div>
+    <h1 class="hero-headline">
+      You're not<br>
+      <span class="accent-red">distracted</span>.<br>
+      You're <span class="accent-blue">overloaded</span>.
+    </h1>
+    <p class="hero-sub">
+      Important information is getting lost in the noise.<br>
+      Every second, something that matters disappears.
+    </p>
+    <div class="scroll-cta" onclick="document.getElementById('stats').scrollIntoView({behavior:'smooth'})">
+      <span class="scroll-cta-label">Scroll to see the cost</span>
+      <div class="scroll-arrow-line"></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════ STATS ═══════════════════════════ -->
+<section id="stats">
+  <div class="stats-inner">
+    <div class="section-head reveal">
+      <span class="section-label">The Numbers</span>
+      <h2>The modern notification crisis</h2>
+      <p>Every day your phone competes for your attention — and your phone always wins. But at what cost?</p>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card reveal reveal-delay-1" style="--card-glow: var(--neon-blue);">
+        <div class="stat-number" style="color:var(--neon-blue);">
+          <span class="counter" data-target="100">0</span>+
+        </div>
+        <div class="stat-label">Notifications received per person, per day</div>
+      </div>
+      <div class="stat-card reveal reveal-delay-2" style="--card-glow: var(--neon-red);">
+        <div class="stat-number" style="color:var(--neon-red);">
+          <span class="counter" data-target="71">0</span>%
+        </div>
+        <div class="stat-label">Are irrelevant, promotional, or low-priority</div>
+      </div>
+      <div class="stat-card reveal reveal-delay-3" style="--card-glow: var(--neon-yellow);">
+        <div class="stat-number" style="color:var(--neon-yellow);">
+          <span class="counter" data-target="23">0</span>m
+        </div>
+        <div class="stat-label">To fully refocus after a single interruption</div>
+      </div>
+      <div class="stat-card reveal reveal-delay-4" style="--card-glow: var(--neon-green);">
+        <div class="stat-number" style="color:var(--neon-green);">
+          <span class="counter" data-target="4">0</span>h
+        </div>
+        <div class="stat-label">Of productive time lost weekly to notification overload</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════ PSYCH ═══════════════════════════ -->
+<section id="psych">
+  <div class="section-head reveal">
+    <span class="section-label">Psychological Impact</span>
+    <h2>What overload does to your mind</h2>
+    <p>Notification overload isn't just inconvenient. It reshapes how you think, feel, and respond to the world.</p>
+  </div>
+  <div class="psych-grid">
+    <div class="psych-card reveal reveal-delay-1" style="--card-accent: rgba(255,59,92,0.6);">
+      <div class="psych-word" style="color:var(--neon-red);">Alert Fatigue</div>
+      <p class="psych-desc">You stop caring about all alerts — including the ones that matter. Your brain learns to ignore the noise, and then ignores everything.</p>
+    </div>
+    <div class="psych-card reveal reveal-delay-2" style="--card-accent: rgba(255,204,0,0.6);">
+      <div class="psych-word" style="color:var(--neon-yellow);">Anxiety Loops</div>
+      <p class="psych-desc">A constant stream of pings creates low-level chronic stress — a permanent sense that something urgent needs your attention right now.</p>
+    </div>
+    <div class="psych-card reveal reveal-delay-3" style="--card-accent: rgba(0,212,255,0.6);">
+      <div class="psych-word" style="color:var(--neon-blue);">Fragmented Focus</div>
+      <p class="psych-desc">Deep work becomes impossible. Thinking is interrupted before it can form. Ideas, plans, and connections are cut short before they mature.</p>
+    </div>
+    <div class="psych-card reveal reveal-delay-4" style="--card-accent: rgba(0,255,157,0.6);">
+      <div class="psych-word" style="color:var(--neon-green);">Eroded Trust</div>
+      <p class="psych-desc">When everything feels urgent, nothing is. You lose faith in notifications as signals — and truly critical alerts start to slip through.</p>
+    </div>
+    <div class="psych-card reveal reveal-delay-5" style="--card-accent: rgba(187,127,255,0.6);">
+      <div class="psych-word" style="color:var(--neon-purple);">Phantom Urgency</div>
+      <p class="psych-desc">You feel pressured to respond instantly to everything, creating a treadmill of reactive behavior instead of intentional action.</p>
+    </div>
+    <div class="psych-card reveal reveal-delay-1" style="--card-accent: rgba(255,138,76,0.6);">
+      <div class="psych-word" style="color:var(--neon-orange);">Decision Drain</div>
+      <p class="psych-desc">Every notification forces a micro-decision — respond, dismiss, or delay. Thousands of these exhaust your cognitive resources before noon.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════ MISSED ═══════════════════════════ -->
+<section id="missed">
+  <div class="missed-inner">
+    <div class="section-head reveal">
+      <span class="section-label">The Real Cost</span>
+      <h2>What you actually missed</h2>
+      <p>These notifications existed. You just never saw them — buried under 40 others in the same minute.</p>
+    </div>
+    <div class="missed-cards">
+      <div class="missed-card reveal reveal-delay-1">
+        <div class="missed-icon">🔐</div>
+        <div class="missed-text">
+          <div class="missed-title">OTP: 847291 — Login verification code</div>
+          <div class="missed-time">Expired 30 seconds after delivery</div>
+        </div>
+        <div class="missed-badge">Expired</div>
+      </div>
+      <div class="missed-card reveal reveal-delay-2">
+        <div class="missed-icon">🏦</div>
+        <div class="missed-text">
+          <div class="missed-title">Bank Alert — Suspicious transaction detected on your account</div>
+          <div class="missed-time">Seen 2 hours later</div>
+        </div>
+        <div class="missed-badge">Too late</div>
+      </div>
+      <div class="missed-card reveal reveal-delay-3">
+        <div class="missed-icon">📋</div>
+        <div class="missed-text">
+          <div class="missed-title">Exam rescheduled — Hall ticket required tomorrow 8 AM</div>
+          <div class="missed-time">Discovered at midnight</div>
+        </div>
+        <div class="missed-badge">Missed</div>
+      </div>
+      <div class="missed-card reveal reveal-delay-4">
+        <div class="missed-icon">💳</div>
+        <div class="missed-text">
+          <div class="missed-title">Payment failed — Your order has been cancelled</div>
+          <div class="missed-time">Retry window closed after 15 minutes</div>
+        </div>
+        <div class="missed-badge">Closed</div>
+      </div>
+      <div class="missed-card reveal reveal-delay-5">
+        <div class="missed-icon">🏥</div>
+        <div class="missed-text">
+          <div class="missed-title">Appointment reminder — Doctor visit in 30 minutes</div>
+          <div class="missed-time">No-show recorded on your profile</div>
+        </div>
+        <div class="missed-badge">Gone</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ TRANSITION ═══════════════════════════ -->
+<section id="transition">
+  <div class="transition-glow"></div>
+  <div class="transition-content reveal">
+    <p class="big-quote">
+      The problem isn't that <strong>you don't care</strong>.<br>
+      The problem is that <strong>the signal is buried</strong>.
+      <span class="q-blue">What if your phone knew the difference?</span>
+    </p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════ CONCEPT ═══════════════════════════ -->
+<section id="concept">
+  <div class="section-head reveal">
+    <span class="section-label">The Shift</span>
+    <h2>Attention control, not mute</h2>
+    <p>Not a notification blocker. Not silence. A new relationship with what reaches you — and when, and how.</p>
+  </div>
+  <div class="pillar-grid">
+    <div class="pillar-card reveal reveal-delay-1" style="--pillar-accent: var(--neon-blue);">
+      <div class="pillar-icon" style="background:rgba(0,212,255,0.1); color:var(--neon-blue);">↑</div>
+      <div class="pillar-title">What matters comes first</div>
+      <p class="pillar-desc">Critical alerts — OTPs, payments, deadlines — surface to the top. Every time. Without you having to look for them.</p>
+    </div>
+    <div class="pillar-card reveal reveal-delay-2" style="--pillar-accent: var(--neon-red);">
+      <div class="pillar-icon" style="background:rgba(255,59,92,0.1); color:var(--neon-red);">↓</div>
+      <div class="pillar-title">Noise fades away</div>
+      <p class="pillar-desc">Promotions, social nudges, and low-priority pings recede — present when you want them, invisible when you don't.</p>
+    </div>
+    <div class="pillar-card reveal reveal-delay-3" style="--pillar-accent: var(--neon-green);">
+      <div class="pillar-icon" style="background:rgba(0,255,157,0.1); color:var(--neon-green);">◉</div>
+      <div class="pillar-title">Your attention, your control</div>
+      <p class="pillar-desc">You decide what breaks your flow. Your focus is a resource — and it deserves the same protection as your data.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ FINAL ═══════════════════════════ -->
+<section id="final">
+  <div class="final-radial"></div>
+  <div class="final-rings">
+    <div class="ring"></div>
+    <div class="ring"></div>
+    <div class="ring"></div>
+    <div class="ring"></div>
+  </div>
+
+  <p class="final-quote reveal">
+    You don't miss what matters<br>
+    because you <em>don't care</em>.<br><br>
+    You miss it because<br>
+    you <span class="highlight">never saw it</span>.
+  </p>
+
+  <div class="cta-group reveal reveal-delay-2">
+    <button class="btn-primary">Rethink Notifications</button>
+    <button class="btn-secondary">Take Back Control</button>
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <div class="footer-logo">focus<span>.</span></div>
+  <div class="footer-note">Designed to demonstrate notification overload research &amp; UX storytelling.</div>
+</footer>
+
+<!-- ═══════════════════════════ JS ═══════════════════════════ -->
+<script>
+/* ── Notification data ── */
+const NOTIFS = [
+  { app:'ShopNow',    icon:'🛍',  msg:'Flash sale! 80% off — ends in 2 hrs!!',              cls:'notif-spam'   },
+  { app:'Instagram',  icon:'📸',  msg:'5 people liked your photo',                           cls:'notif-social'  },
+  { app:'FoodApp',    icon:'🍕',  msg:'Order now, get free delivery on your next meal',      cls:'notif-promo'   },
+  { app:'SBI Alerts', icon:'🔐',  msg:'OTP: 284710 — expires in 60 sec. Do not share.',     cls:'notif-otp',   important:true, delay:3200 },
+  { app:'WhatsApp',   icon:'💬',  msg:'Rahul: heyy what are you doing tonight?',            cls:'notif-social'  },
+  { app:'NewsFlash',  icon:'📣',  msg:'BREAKING: You won\'t believe what happened next…',  cls:'notif-spam'   },
+  { app:'GameZone',   icon:'🎮',  msg:'Your daily reward is waiting! Claim before 12 AM',   cls:'notif-promo'   },
+  { app:'College',    icon:'📋',  msg:'Exam hall ticket released — download before 6 PM',   cls:'notif-exam',  important:true, delay:4000 },
+  { app:'LinkedIn',   icon:'👍',  msg:'Your post is getting traction — 38 reactions',       cls:'notif-social'  },
+  { app:'LoanQuick',  icon:'💸',  msg:'Get ₹50,000 approved in 60 seconds. Apply now!',     cls:'notif-spam'   },
+  { app:'Spotify',    icon:'🎵',  msg:'New playlist curated just for your mood today',      cls:'notif-promo'   },
+  { app:'HDFC Bank',  icon:'🏦',  msg:'Debit ₹12,500 at 2:34 AM. Not you? Call now.',      cls:'notif-bank',  important:true, delay:3600 },
+  { app:'Telegram',   icon:'💬',  msg:'New message in CS2025 group (12 unread)',             cls:'notif-social'  },
+  { app:'Myntra',     icon:'🛒',  msg:'Your wishlist items are selling fast — grab them!',  cls:'notif-spam'   },
+  { app:'Netflix',    icon:'📺',  msg:'New season just dropped. Start watching now.',       cls:'notif-promo'   },
+  { app:'Zomato',     icon:'🍔',  msg:'Your favourite restaurant has a new deal today',     cls:'notif-promo'   },
+  { app:'Twitter/X',  icon:'🐦',  msg:'Someone mentioned you in a thread with 2.4k likes', cls:'notif-social'  },
+  { app:'Paytm',      icon:'💰',  msg:'Payment of ₹3,200 pending — complete now',           cls:'notif-otp',   important:true, delay:3800 },
+];
+
+const stream  = document.getElementById('notifStream');
+let   nIndex  = 0;
+const maxShow = 8;
+let   items   = [];
+
+function addNotif() {
+  const n   = NOTIFS[nIndex % NOTIFS.length];
+  nIndex++;
+
+  const el  = document.createElement('div');
+  el.className = `notif-item ${n.cls}`;
+  el.innerHTML = `
+    <div class="notif-icon">${n.icon}</div>
+    <div class="notif-content">
+      <strong>${n.app}</strong>
+      <span>${n.msg}</span>
+    </div>`;
+
+  stream.insertBefore(el, stream.firstChild);
+  items.unshift(el);
+
+  if (items.length > maxShow) {
+    const old = items.pop();
+    old.style.transition = 'opacity 0.35s ease';
+    old.style.opacity    = '0';
+    setTimeout(() => { try { old.remove(); } catch(e){} }, 380);
+  }
+
+  const base  = n.important ? (n.delay || 3000) : 750 + Math.random() * 900;
+  setTimeout(addNotif, base);
+}
+
+addNotif();
+
+/* ── Intersection observer for reveals ── */
+const reveals  = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      const counters = e.target.querySelectorAll('.counter');
+      counters.forEach(animateCounter);
+    }
+  });
+}, { threshold: 0.12 });
+
+reveals.forEach(el => observer.observe(el));
+
+/* ── Counter animation ── */
+function animateCounter(el) {
+  if (el.dataset.done) return;
+  el.dataset.done = '1';
+  const target = parseInt(el.dataset.target);
+  let   val    = 0;
+  const step   = Math.max(1, Math.ceil(target / 45));
+  const t      = setInterval(() => {
+    val = Math.min(val + step, target);
+    el.textContent = val;
+    if (val >= target) clearInterval(t);
+  }, 28);
+}
+
+/* ── Mobile nav ── */
+const menuBtn   = document.getElementById('menuBtn');
+const navMobile = document.getElementById('navMobile');
+let   menuOpen  = false;
+
+menuBtn.addEventListener('click', () => {
+  menuOpen = !menuOpen;
+  navMobile.classList.toggle('open', menuOpen);
+  const spans = menuBtn.querySelectorAll('span');
+  if (menuOpen) {
+    spans[0].style.transform = 'rotate(45deg) translate(4px, 4.5px)';
+    spans[1].style.opacity   = '0';
+    spans[2].style.transform = 'rotate(-45deg) translate(4px, -4.5px)';
+  } else {
+    spans[0].style.transform = '';
+    spans[1].style.opacity   = '';
+    spans[2].style.transform = '';
+  }
+});
+
+function closeMobile() {
+  menuOpen = false;
+  navMobile.classList.remove('open');
+  const spans = menuBtn.querySelectorAll('span');
+  spans[0].style.transform = '';
+  spans[1].style.opacity   = '';
+  spans[2].style.transform = '';
+}
+
+/* ── Close mobile menu on outside click ── */
+document.addEventListener('click', (e) => {
+  if (menuOpen && !navMobile.contains(e.target) && !menuBtn.contains(e.target)) {
+    closeMobile();
+  }
+});
+
+/* ── Navbar scroll shadow ── */
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  navbar.style.borderBottomColor = window.scrollY > 10
+    ? 'rgba(0,212,255,0.1)'
+    : 'rgba(255,255,255,0.07)';
+}, { passive: true });
+</script>
+</body>
+</html>
